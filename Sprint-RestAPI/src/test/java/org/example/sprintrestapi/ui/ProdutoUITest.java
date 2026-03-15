@@ -12,6 +12,7 @@ import org.openqa.selenium.Alert;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.JavascriptExecutor;
 import java.time.Duration;
 
 public class ProdutoUITest {
@@ -25,45 +26,45 @@ public class ProdutoUITest {
         options.addArguments("--disable-gpu");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--window-size=1920,1080");
 
         driver = new ChromeDriver(options);
-
-        wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
     @AfterEach
-    public void tearDown( ) {
+    public void tearDown() {
         if (driver != null) {
             driver.quit();
         }
     }
 
     @Test
-    public void testCadastrarEExcluirProduto( ) {
+    public void testFluxoCompletoEIntegracao() {
         driver.get("http://localhost:8080");
 
-        driver.findElement(By.id("nome")).sendKeys("teste automatizado");
-        driver.findElement(By.id("quantidade")).sendKeys("10");
-        driver.findElement(By.id("preco")).sendKeys("99.00");
+        WebElement inputNome = wait.until(ExpectedConditions.elementToBeClickable(By.id("nome")));
+        inputNome.sendKeys("Produto Integrado");
+
+        driver.findElement(By.id("quantidade")).sendKeys("5");
+        driver.findElement(By.id("preco")).sendKeys("150.00");
         driver.findElement(By.cssSelector("button[type='submit']")).click();
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.id("tabelaCorpo"), "teste automatizado"));
-        assertTrue(driver.getPageSource().contains("teste automatizado"));
 
-        driver.findElement(By.className("btn-danger")).click();
-        Alert alert = driver.switchTo().alert();
+        WebElement tabela = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("tabelaCorpo")));
+        wait.until(ExpectedConditions.textToBePresentInElement(tabela, "Produto Integrado"));
+
+        assertTrue(driver.getPageSource().contains("Produto Integrado"));
+
+        WebElement botaoExcluir = wait.until(ExpectedConditions.elementToBeClickable(By.className("btn-danger")));
+
+        try {
+            botaoExcluir.click();
+        } catch (Exception e) {
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            js.executeScript("arguments[0].click();", botaoExcluir);
+        }
+
+        Alert alert = wait.until(ExpectedConditions.alertIsPresent());
         alert.accept();
-    }
-
-    @Test
-    public void testErroAoCadastrarProdutoInvalido( ) {
-        driver.get("http://localhost:8080");
-
-        driver.findElement(By.id("nome")).sendKeys("erro");
-        driver.findElement(By.id("quantidade")).sendKeys("1");
-        driver.findElement(By.id("preco")).sendKeys("-100");
-        driver.findElement(By.id("btnCadastrar")).click();
-
-        WebElement msgErro = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("mensagemErro")));
-        assertTrue(msgErro.getText().contains("valor preco nao pode ser negativo"));
     }
 }

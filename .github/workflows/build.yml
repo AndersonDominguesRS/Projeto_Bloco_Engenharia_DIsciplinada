@@ -5,7 +5,6 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -15,30 +14,33 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar Java 21
+      - name: Configurar JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'maven'
 
-      - name: Instalar Chrome
+      - name: Instalar Google Chrome (Necessário para Selenium)
         run: |
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
 
-      - name: Compilar projeto
-        # Compila sem rodar testes para evitar erro de conexão prematura
-        run: mvn -B package -DskipTests --file Sprint-RestAPI/pom.xml
+      - name: Compilar e Empacotar
+        run: mvn clean package -DskipTests --file Sprint-RestAPI/pom.xml
 
-      - name: Iniciar servidor e rodar testes
+      - name: Iniciar Aplicação e Rodar Testes de UI
         run: |
           mvn spring-boot:run --file Sprint-RestAPI/pom.xml &
-          echo "Aguardando servidor subir..."
-          sleep 30
+          echo "Aguardando inicialização do Spring Boot..."
+          sleep 20
           mvn test --file Sprint-RestAPI/pom.xml
+        env:
+          CHROME_HEADLESS: true 
 
-      - name: Publicar Relatórios de Testes
+      - name: Upload de Artefatos
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: relatorio-testes-build
-          path: Sprint-RestAPI/target/surefire-reports
+          name: relatorios-execucao
+          path: Sprint-RestAPI/target/surefire-reports/

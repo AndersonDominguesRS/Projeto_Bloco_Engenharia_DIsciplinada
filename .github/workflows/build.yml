@@ -22,4 +22,4 @@ jobs:
           java-version: '21'
 
       - name: Build com Maven
-        run: mvn -B package --file Tps/TP4/Sprint-RestAPI/pom.xml
+        run: mvn -B package --file Sprint-RestAPI/pom.xml

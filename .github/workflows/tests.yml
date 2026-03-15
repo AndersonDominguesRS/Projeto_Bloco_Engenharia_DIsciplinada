@@ -22,10 +22,10 @@ jobs:
           java-version: '21'
 
       - name: Executar testes
-        run: mvn test --file Tps/TP4/Sprint-RestAPI/pom.xml
+        run: mvn test --file Sprint-RestAPI/pom.xml
 
       - name: Publicar Relatório de Testes
         uses: actions/upload-artifact@v4
         with:
           name: relatorio-testes
-          path: Tps/TP4/Sprint-RestAPI/target/surefire-reports
+          path: Sprint-RestAPI/target/surefire-reports

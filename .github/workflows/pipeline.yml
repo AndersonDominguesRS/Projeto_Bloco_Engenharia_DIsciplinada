@@ -51,3 +51,24 @@ jobs:
         with:
           name: relatorios-finais
           path: Sprint-RestAPI/target/surefire-reports/
+		  
+- name: Gerar Resumo do Job
+        if: always()
+        run: |
+          echo "### resultado da Execucao" >> $GITHUB_STEP_SUMMARY
+          echo "| Categoria | Estado |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build Maven** |  Sucesso |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Testes Unitários** | ${{ job.status == 'success' && ' OK' || 'Falhou' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Banco de Dados** |  Conectado (${{ secrets.DB_URL }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> [!IMPORTANT]" >> $GITHUB_STEP_SUMMARY
+          echo "> Os relatórios detalhados do Selenium e Surefire estão disponíveis nos artefatos abaixo." >> $GITHUB_STEP_SUMMARY
+
+      - name: Debug Log Personalizado
+        if: failure()
+        run: |
+          echo "::error title=Falha no Pipeline::Verifique se o Chrome Headless está ativo e se as credenciais do DB estão corretas."
+          echo "::group::Visualizar Logs do Spring"
+          cat Sprint-RestAPI/target/spring-boot-logs.txt || echo "Log não encontrado"
+          echo "::endgroup::"

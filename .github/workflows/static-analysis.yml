@@ -22,7 +22,7 @@ jobs:
           java-version: '17'
 
       - name: Executar análise estática com Maven
-        run: mvn verify --file Tps/TP4/Sprint-RestAPI/pom.xml
+        run: mvn verify --file Sprint-RestAPI/pom.xml
 
       - name: Publicar relatórios
         uses: actions/upload-artifact@v4

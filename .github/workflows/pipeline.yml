@@ -1,65 +1,53 @@
-name: Continuous Deployment (OIDC & Multi-Env)
+name: Pipeline CI-CD Disciplinado
 
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
-
-permissions:
-  id-token: write
-  contents: read
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    
+    env:
+      SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      CHROME_HEADLESS: ${{ vars.CHROME_HEADLESS }}
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Java 21
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
           cache: 'maven'
-      - name: Build JAR
+
+      - name: Instalar Google Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Build do Projeto
         run: mvn clean package -DskipTests --file Sprint-RestAPI/pom.xml
-      - name: Upload JAR para Deploy
+
+      - name: Iniciar Aplicação e Health Check
+        run: |
+          mvn spring-boot:run --file Sprint-RestAPI/pom.xml &
+          echo "Aguardando API..."
+          timeout 60s bash -c 'until curl -s localhost:8080/produtos; do echo "Aguardando..."; sleep 5; done'
+
+      - name: Executar Testes Automatizados
+        run: mvn test --file Sprint-RestAPI/pom.xml
+
+      - name: Upload de Artefatos
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-bin
-          path: Sprint-RestAPI/target/*.jar
-
-  deploy-testing:
-    needs: build-and-test
-    environment: testing
-    runs-on: ubuntu-latest
-    steps:
-      - name: OIDC Login (Exemplo AWS/Azure/GCP)
-        run: echo "Autenticando via OIDC sem chaves fixas..."
-
-      - name: Deploy to Testing
-        run: echo "Realizando deploy no ambiente de homologação..."
-
-      - name: Smoke Test (DAST Simples)
-        run: |
-          curl -f http://testing-env.seu-app.com/produtos || exit 1
-
-  deploy-production:
-    needs: deploy-testing
-    environment: production
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download App Binary
-        uses: actions/download-artifact@v4
-        with:
-          name: app-bin
-
-      - name: OIDC Login Production
-        run: echo "Autenticação segura via token OIDC para produção..."
-
-      - name: Deploy Final
-        run: echo "Publicando na nuvem de produção..."
-
-      - name: Validação Final Selenium (Headless)
-        run: |
-          echo "Executando testes de UI contra a URL de produção..."
-          # Aqui você apontaria o Selenium para a URL real de prod
+          name: relatorios-finais
+          path: Sprint-RestAPI/target/surefire-reports/

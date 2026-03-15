@@ -21,7 +21,7 @@ public class ProdutoUITest {
     @BeforeEach
     public void setup() {
         ChromeOptions options = new ChromeOptions();
-        
+
         options.addArguments("--headless=new");
         options.addArguments("--disable-gpu");
         options.addArguments("--no-sandbox");

@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Executar análise estática com Maven
         run: mvn verify --file Sprint-RestAPI/pom.xml
@@ -29,5 +29,5 @@ jobs:
         with:
           name: analise-estatica
           path: |
-            Tps/TP4/Sprint-RestAPI/target/checkstyle-result.xml
-            Tps/TP4/Sprint-RestAPI/target/spotbugsXml.xml
+            Sprint-RestAPI/target/checkstyle-result.xml
+            Sprint-RestAPI/target/spotbugsXml.xml

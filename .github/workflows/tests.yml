@@ -1,0 +1,31 @@
+name: Testes Automatizados
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Executar testes
+        run: ./gradlew test --no-daemon
+
+      - name: Publicar Relatório de Testes
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes
+          path: build/reports/tests/test

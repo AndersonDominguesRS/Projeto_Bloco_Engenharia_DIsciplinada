@@ -1,0 +1,33 @@
+name: Análise Estática de Código
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Executar análise estática
+        run: ./gradlew check --no-daemon
+
+      - name: Publicar relatórios
+        uses: actions/upload-artifact@v4
+        with:
+          name: analise-estatica
+          path: |
+            build/reports/checkstyle
+            build/reports/spotbugs

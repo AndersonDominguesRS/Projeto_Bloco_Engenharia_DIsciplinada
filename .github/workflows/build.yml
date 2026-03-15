@@ -1,4 +1,4 @@
-name: Build Maven
+name: Build e Testes Maven
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout do código
         uses: actions/checkout@v4
 
       - name: Configurar Java
@@ -21,5 +21,24 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Build com Maven
-        run: mvn -B package --file Sprint-RestAPI/pom.xml
+      - name: Instalar Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Iniciar aplicação Spring Boot
+        run: mvn spring-boot:run --file Sprint-RestAPI/pom.xml &
+      
+      - name: Aguardar servidor iniciar
+        run: |
+          echo "Aguardando servidor subir..."
+          sleep 15
+
+      - name: Executar build e testes
+        run: mvn -B test --file Sprint-RestAPI/pom.xml
+
+      - name: Publicar Relatórios de Testes
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes
+          path: Sprint-RestAPI/target/surefire-reports

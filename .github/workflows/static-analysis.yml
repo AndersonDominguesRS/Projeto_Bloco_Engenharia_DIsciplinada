@@ -21,13 +21,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Executar análise estática
-        run: ./gradlew check --no-daemon
+      - name: Executar análise estática com Maven
+        run: mvn verify --file Tps/TP4/Sprint-RestAPI/pom.xml
 
       - name: Publicar relatórios
         uses: actions/upload-artifact@v4
         with:
           name: analise-estatica
           path: |
-            build/reports/checkstyle
-            build/reports/spotbugs
+            Tps/TP4/Sprint-RestAPI/target/checkstyle-result.xml
+            Tps/TP4/Sprint-RestAPI/target/spotbugsXml.xml

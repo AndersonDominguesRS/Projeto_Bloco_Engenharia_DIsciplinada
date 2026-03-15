@@ -21,11 +21,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Executar testes
-        run: ./gradlew test --no-daemon
+      - name: Executar testes com Maven
+        run: mvn test --file Tps/TP4/Sprint-RestAPI/pom.xml
 
       - name: Publicar Relatório de Testes
         uses: actions/upload-artifact@v4
         with:
           name: relatorio-testes
-          path: build/reports/tests/test
+          path: Tps/TP4/Sprint-RestAPI/target/surefire-reports

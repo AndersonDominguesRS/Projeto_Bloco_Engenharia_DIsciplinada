@@ -21,6 +21,11 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Forçar uso do Java 21 em todo o workflow
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          echo "PATH=$JAVA_HOME/bin:$PATH" >> $GITHUB_ENV
+
       - name: Instalar Chrome
         run: |
           sudo apt-get update

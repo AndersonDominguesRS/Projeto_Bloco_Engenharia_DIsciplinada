@@ -1,4 +1,4 @@
-name: Pipeline CI-CD Disciplinado
+name: Pipeline Sprint RestAPI
 
 on:
   push:
@@ -36,39 +36,19 @@ jobs:
       - name: Build do Projeto
         run: mvn clean package -DskipTests --file Sprint-RestAPI/pom.xml
 
-      - name: Iniciar Aplicação e Health Check
+      - name: Iniciar Aplicação e Testes
         run: |
+          # Sobe a API em background
           mvn spring-boot:run --file Sprint-RestAPI/pom.xml &
-          echo "Aguardando API..."
-          timeout 60s bash -c 'until curl -s localhost:8080/produtos; do echo "Aguardando..."; sleep 5; done'
+          echo "Aguardando 20 segundos para a API subir..."
+          sleep 20
+          # Roda todos os testes (Unitários e Selenium)
+          mvn test --file Sprint-RestAPI/pom.xml
 
-      - name: Executar Testes Automatizados
-        run: mvn test --file Sprint-RestAPI/pom.xml
-
-      - name: Upload de Artefatos
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: relatorios-finais
-          path: Sprint-RestAPI/target/surefire-reports/
-		  
-- name: Gerar Resumo do Job
+      - name: Gerar Resumo
         if: always()
         run: |
-          echo "### resultado da Execucao" >> $GITHUB_STEP_SUMMARY
-          echo "| Categoria | Estado |" >> $GITHUB_STEP_SUMMARY
+          echo "### Relatório de Automação" >> $GITHUB_STEP_SUMMARY
+          echo "| Status do Build | Testes Executados |" >> $GITHUB_STEP_SUMMARY
           echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Build Maven** |  Sucesso |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Testes Unitários** | ${{ job.status == 'success' && ' OK' || 'Falhou' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Banco de Dados** |  Conectado (${{ secrets.DB_URL }}) |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> [!IMPORTANT]" >> $GITHUB_STEP_SUMMARY
-          echo "> Os relatórios detalhados do Selenium e Surefire estão disponíveis nos artefatos abaixo." >> $GITHUB_STEP_SUMMARY
-
-      - name: Debug Log Personalizado
-        if: failure()
-        run: |
-          echo "::error title=Falha no Pipeline::Verifique se o Chrome Headless está ativo e se as credenciais do DB estão corretas."
-          echo "::group::Visualizar Logs do Spring"
-          cat Sprint-RestAPI/target/spring-boot-logs.txt || echo "Log não encontrado"
-          echo "::endgroup::"
+          echo "|  Concluído | Sim |" >> $GITHUB_STEP_SUMMARY

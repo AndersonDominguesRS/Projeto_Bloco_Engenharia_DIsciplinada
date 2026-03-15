@@ -18,9 +18,19 @@ public class ProdutoService {
     }
 
     public Produto save(Produto produto) {
+
         if (produto.getPreco() < 0) {
             throw new IllegalArgumentException("valor preco nao pode ser negativo");
         }
+
+        if (produto.getNome() == null || produto.getNome().isBlank()) {
+            throw new IllegalArgumentException("Nome do produto é obrigatório");
+        }
+
+        if (produto.getQuantidade() < 1) {
+            throw new IllegalArgumentException("Quantidade deve ser ao menos 1");
+        }
+
         return produtoRepository.save(produto);
     }
 }

@@ -1,0 +1,61 @@
+name: CI/CD Disciplinado - Sprint RestAPI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    # Mapeamento das variáveis de ambiente que você criou no GitHub
+    env:
+      SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      CHROME_HEADLESS: ${{ vars.CHROME_HEADLESS }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Instalar Google Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Análise Estática (SAST)
+        run: mvn checkstyle:check spotbugs:check --file Sprint-RestAPI/pom.xml
+        continue-on-error: true # Permite continuar o build mesmo com avisos de estilo
+
+      - name: Build do Projeto
+        run: mvn clean package -DskipTests --file Sprint-RestAPI/pom.xml
+
+      - name: Iniciar Aplicação e Health Check
+        run: |
+          mvn spring-boot:run --file Sprint-RestAPI/pom.xml &
+          echo "Aguardando API ficar online..."
+          # Loop de Health Check: tenta conectar por até 60 segundos
+          timeout 60s bash -c 'until curl -s localhost:8080/produtos; do echo "Aguardando..."; sleep 5; done'
+
+      - name: Executar Testes Automatizados (Unitários e UI)
+        run: mvn test --file Sprint-RestAPI/pom.xml
+
+      - name: Upload de Artefatos (Relatórios e JAR)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pacotes-e-relatorios
+          path: |
+            Sprint-RestAPI/target/*.jar
+            Sprint-RestAPI/target/surefire-reports/

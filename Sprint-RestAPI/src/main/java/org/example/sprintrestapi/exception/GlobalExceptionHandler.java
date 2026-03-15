@@ -10,16 +10,14 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-
     public ResponseEntity<Map<String, String>> handleValidation(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("erro", ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
-
     public ResponseEntity<Map<String, String>> handleGeneral(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("erro", "Ocorreu um erro interno."));
+                .body(Map.of("erro", "Erro interno no servidor"));
     }
 }

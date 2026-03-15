@@ -12,6 +12,7 @@ public class ProdutoService {
     public static final String ERR_PRECO = "valor preco nao pode ser negativo";
     public static final String ERR_NOME = "Nome do produto é obrigatório";
     public static final String ERR_QTD = "Quantidade deve ser ao menos 1";
+    public static final String ERR_PRODUTO_NULL = "Produto nulo";
 
     public ProdutoService(IProdutoRepository produtoRepository) {
         this.produtoRepository = produtoRepository;
@@ -22,19 +23,22 @@ public class ProdutoService {
     }
 
     public Produto save(Produto produto) {
-        validarProduto(produto);
-        return produtoRepository.save(produto);
-    }
+        if (produto == null) {
+            throw new IllegalArgumentException(ERR_PRODUTO_NULL);
+        }
 
-    private void validarProduto(Produto produto) {
         if (produto.getPreco() == null || produto.getPreco() < 0) {
             throw new IllegalArgumentException(ERR_PRECO);
         }
+
         if (produto.getNome() == null || produto.getNome().isBlank()) {
             throw new IllegalArgumentException(ERR_NOME);
         }
+
         if (produto.getQuantidade() == null || produto.getQuantidade() < 1) {
             throw new IllegalArgumentException(ERR_QTD);
         }
+
+        return produtoRepository.save(produto);
     }
 }

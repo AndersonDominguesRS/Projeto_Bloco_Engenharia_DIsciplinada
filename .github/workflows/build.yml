@@ -15,7 +15,7 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar Java
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -26,6 +26,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
 
+      - name: Compilar projeto
+        run: mvn -B package --file Sprint-RestAPI/pom.xml
+
       - name: Iniciar aplicação Spring Boot
         run: mvn spring-boot:run --file Sprint-RestAPI/pom.xml &
       
@@ -34,8 +37,8 @@ jobs:
           echo "Aguardando servidor subir..."
           sleep 15
 
-      - name: Executar build e testes
-        run: mvn -B test --file Sprint-RestAPI/pom.xml
+      - name: Executar testes
+        run: mvn test --file Sprint-RestAPI/pom.xml
 
       - name: Publicar Relatórios de Testes
         uses: actions/upload-artifact@v4

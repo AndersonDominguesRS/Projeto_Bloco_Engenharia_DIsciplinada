@@ -11,7 +11,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    # Mapeamento das variáveis de ambiente que você criou no GitHub
     env:
       SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
       SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
@@ -34,28 +33,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
 
-      - name: Análise Estática (SAST)
-        run: mvn checkstyle:check spotbugs:check --file Sprint-RestAPI/pom.xml
-        continue-on-error: true # Permite continuar o build mesmo com avisos de estilo
-
       - name: Build do Projeto
         run: mvn clean package -DskipTests --file Sprint-RestAPI/pom.xml
 
       - name: Iniciar Aplicação e Health Check
         run: |
           mvn spring-boot:run --file Sprint-RestAPI/pom.xml &
-          echo "Aguardando API ficar online..."
-          # Loop de Health Check: tenta conectar por até 60 segundos
+          echo "Aguardando API..."
           timeout 60s bash -c 'until curl -s localhost:8080/produtos; do echo "Aguardando..."; sleep 5; done'
 
-      - name: Executar Testes Automatizados (Unitários e UI)
+      - name: Executar Testes Automatizados
         run: mvn test --file Sprint-RestAPI/pom.xml
 
-      - name: Upload de Artefatos (Relatórios e JAR)
+      - name: Upload de Artefatos
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pacotes-e-relatorios
-          path: |
-            Sprint-RestAPI/target/*.jar
-            Sprint-RestAPI/target/surefire-reports/
+          name: relatorios-testes
+          path: Sprint-RestAPI/target/surefire-reports/

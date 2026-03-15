@@ -21,11 +21,12 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Executar testes
-        run: mvn test --file Sprint-RestAPI/pom.xml
+      - name: Executar testes unitários
+        # Exclui o teste de UI para que este job não dependa do servidor rodando
+        run: mvn test -Dtest=!ProdutoUITest --file Sprint-RestAPI/pom.xml
 
       - name: Publicar Relatório de Testes
         uses: actions/upload-artifact@v4
         with:
-          name: relatorio-testes
+          name: relatorio-testes-unitarios
           path: Sprint-RestAPI/target/surefire-reports

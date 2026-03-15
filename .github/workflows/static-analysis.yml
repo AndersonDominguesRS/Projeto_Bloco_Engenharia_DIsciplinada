@@ -22,7 +22,6 @@ jobs:
           java-version: '21'
 
       - name: Executar análise estática com Maven
-        # O -DskipTests evita que os testes de UI falhem por falta de servidor/Chrome
         run: mvn verify -DskipTests --file Sprint-RestAPI/pom.xml
 
       - name: Publicar relatórios

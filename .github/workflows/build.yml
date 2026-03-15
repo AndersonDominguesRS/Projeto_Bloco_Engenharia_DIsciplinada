@@ -1,4 +1,4 @@
-name: Build do Projeto
+name: Build Maven
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configurar Java
@@ -21,15 +21,5 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache do Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Build com Gradle
-        run: ./gradlew build --no-daemon
+      - name: Build com Maven
+        run: mvn -B package --file pom.xml

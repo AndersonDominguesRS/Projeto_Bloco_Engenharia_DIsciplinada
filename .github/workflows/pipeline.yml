@@ -18,7 +18,7 @@ jobs:
       CHROME_HEADLESS: ${{ vars.CHROME_HEADLESS }}
 
     steps:
-      - name: Checkout do código
+       name: Checkout do código
         uses: actions/checkout@v4
 
       - name: Configurar Java 21
@@ -38,11 +38,9 @@ jobs:
 
       - name: Iniciar Aplicação e Testes
         run: |
-          # Sobe a API em background
           mvn spring-boot:run --file Sprint-RestAPI/pom.xml &
           echo "Aguardando 20 segundos para a API subir..."
           sleep 20
-          # Roda todos os testes (Unitários e Selenium)
           mvn test --file Sprint-RestAPI/pom.xml
 
       - name: Gerar Resumo
